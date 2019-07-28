@@ -51,10 +51,17 @@ class App extends Component {
        })
       .catch(err => console.log(err));
   };
+  update_todoList = viewCompleted => {
+    const cache_todoList = this.state.titles.filter(
+      item => item.completed === viewCompleted)
+    this.setState({ todoList: cache_todoList });
+  }
   displayCompleted = status => {
     if (status) {
+      this.update_todoList(true);
       return this.setState({ viewCompleted: true });
     }
+    this.update_todoList(false);
     return this.setState({ viewCompleted: false });
   };
   renderTabList = () => {
@@ -86,9 +93,9 @@ class App extends Component {
           if (!destination) {
             return;
           }
-          let arr = Array.from(this.state.todoList);
-          const [remove] = arr.splice(source.index+1, 1);
-          arr.splice(destination.index+1, 0, remove);
+          let arr = Array.from(newItems);
+          const [remove] = arr.splice(source.index, 1);
+          arr.splice(destination.index, 0, remove);
           this.setState({
             todoList: arr
           });
