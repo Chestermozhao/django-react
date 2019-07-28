@@ -7,6 +7,11 @@ import {
   DropdownMenu,
   DropdownItem
 } from 'reactstrap';
+import {
+  DragDropContext,
+  Droppable,
+  Draggable
+} from "react-beautiful-dnd";
 
 
 class App extends Component {
@@ -25,15 +30,18 @@ class App extends Component {
       todoList: [],
       dropdownOpen: false,
       titles: [],
+      changeOrder: false,
     };
   }
   componentDidMount() {
-    this.refreshList();
+    if(!this.state.changeOrder){
+      {this.refreshList();}
+    }
   }
   setOrder = (data) => {
     const _todoList = data;
     for (let index = 0; index < _todoList.length; index++) {
-      _todoList[index]['name'] = index+1;
+      _todoList[index]['order'] = index+1;
     }
     this.setState({todoList: _todoList})
   }
@@ -54,7 +62,7 @@ class App extends Component {
   };
   renderTabList = () => {
     return (
-      <div className="my-5 tab-list">
+      <div className="mt-5 mb-4 tab-list">
         <span
           onClick={() => this.displayCompleted(true)}
           className={this.state.viewCompleted ? "active" : ""}
@@ -75,6 +83,65 @@ class App extends Component {
     const newItems = this.state.todoList.filter(
       item => item.completed === viewCompleted
     );
+    return (<DragDropContext
+        onDragEnd={result => {
+          const { source, destination, draggableId } = result;
+          if (!destination) {
+            return;
+          }
+          console.log("hello", source, destination, draggableId)
+          let arr = Array.from(this.state.todoList);
+          const [remove] = arr.splice(source.index, 1);
+          arr.splice(destination.index, 0, remove);
+          this.setState({
+            changeOrder: true,
+            todoList: arr
+          });
+        }}
+      >
+        <Droppable droppableId="d">
+          {provided => (
+            <ul className="list-group list-group-flush todoContent" ref={provided.innerRef} {...provided.droppableProps}>
+              {newItems.map((t, i) => (
+                <Draggable draggableId={t.id} index={i}>
+                  {p => (
+                    <li
+                       ref={p.innerRef}
+                       {...p.draggableProps}
+                       {...p.dragHandleProps}
+                       key={t.id}
+                       className="list-group-item d-flex justify-content-between align-items-center"
+                    >
+                      <span
+                        className={`todo-title mr-2 ${
+                          this.state.viewCompleted ? "completed-todo" : ""
+                        }`}
+                        title={t.description}
+                      >
+                        {t.title}: {t.description}
+                      </span>
+                      <span>
+                        <button
+                          onClick={() => this.editItem(t)}
+                          className="btn btn-secondary mr-2"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => this.handleDelete(t)}
+                          className="btn btn-danger"
+                        >
+                          Delete
+                        </button>
+                      </span>
+                    </li>
+                  )}
+                </Draggable>
+              ))}
+            </ul>
+          )}
+        </Droppable>
+      </DragDropContext>)
     return newItems.map(item => (
       <li
         key={item.id}
@@ -177,7 +244,7 @@ class App extends Component {
   render() {
     return (
       <main className="content">
-        <h1 className="text-white text-uppercase text-center my-4">Todo app</h1>
+        <h1 className="text-white text-uppercase text-center my-4">Chester's Todo List</h1>
         <div className="row ">
           <div className="col-md-6 col-sm-10 mx-auto p-0">
             <div className="card p-3">
@@ -196,9 +263,9 @@ class App extends Component {
                 </Dropdown>
               </div>
               {this.renderTabList()}
-              <ul className="list-group list-group-flush">
-                {this.renderItems()}
-              </ul>
+              <div style={{height: "15em", overflow: "scroll"}}>
+              {this.renderItems()}
+              </div>
             </div>
           </div>
         </div>
