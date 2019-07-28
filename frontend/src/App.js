@@ -1,10 +1,18 @@
 import React, { Component } from "react";
 import Modal from "./components/Modal";
 import axios from "axios";
+import {
+  Dropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem
+} from 'reactstrap';
 
 class App extends Component {
   constructor(props) {
     super(props);
+    this.tag_toggle = this.tag_toggle.bind(this);
+    this.unique = this.unique.bind(this);
     this.state = {
       viewCompleted: false,
       activeItem: {
@@ -13,7 +21,9 @@ class App extends Component {
         completed: false,
         queryFilter: ""
       },
-      todoList: []
+      todoList: [],
+      dropdownOpen: false,
+      titles: []
     };
   }
   componentDidMount() {
@@ -22,7 +32,7 @@ class App extends Component {
   refreshList = () => {
     axios
       .get("http://localhost:8000/api/todos/")
-      .then(res => this.setState({ todoList: res.data }))
+      .then(res => this.setState({ todoList: res.data, titles: res.data }))
       .catch(err => console.log(err));
   };
   displayCompleted = status => {
@@ -85,6 +95,48 @@ class App extends Component {
       </li>
     ));
   };
+
+  tag_toggle() {
+    this.setState(prevState => ({
+      dropdownOpen: !prevState.dropdownOpen
+    }));
+  }
+
+  unique = (arr) => {
+    let _arr = []
+    if(!arr){
+      return _arr
+    } else {
+      for(var i=0; i<arr.length; i++){
+        var title = arr[i].title
+        _arr.push(title)
+      }
+      return Array.from(new Set(_arr))
+    }
+  };
+
+  renderTags = () => {
+    const { viewCompleted } = this.state;
+    const newItems = this.state.titles.filter(
+      item => item.completed === viewCompleted
+    );
+    const unique_title = this.unique(newItems)
+    return unique_title.map((item, index) => (
+      <DropdownItem key={index} onClick={() => this.filterTags(item)}>{item}</DropdownItem>
+    ));
+  }
+
+  filterTags = item => {
+    if(!item){
+        this.refreshList();
+    } else {
+      axios
+        .get(`http://localhost:8000/api/todos/filter_todo/?todo=${item}`)
+        .then(res => this.setState({ todoList: res.data }))
+        .catch(err => console.log(err));
+    }
+  };
+
   toggle = () => {
     this.setState({ modal: !this.state.modal });
   };
@@ -119,10 +171,19 @@ class App extends Component {
         <div className="row ">
           <div className="col-md-6 col-sm-10 mx-auto p-0">
             <div className="card p-3">
-              <div className="">
-                <button onClick={this.createItem} className="btn btn-primary">
+              <div className="row">
+                <button onClick={this.createItem} className="btn btn-primary ml-3">
                   Add task
                 </button>
+                <Dropdown isOpen={this.state.dropdownOpen} toggle={this.tag_toggle} className="ml-2">
+                  <DropdownToggle caret style={{backgroundColor: "#65d400"}}>
+                    TitleFilter
+                  </DropdownToggle>
+                  <DropdownMenu>
+                    <DropdownItem onClick={() => this.filterTags()}>All works</DropdownItem>
+                    {this.renderTags()}
+                  </DropdownMenu>
+                </Dropdown>
               </div>
               {this.renderTabList()}
               <ul className="list-group list-group-flush">
