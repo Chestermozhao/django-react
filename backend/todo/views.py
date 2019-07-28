@@ -13,7 +13,6 @@ class TodoView(viewsets.ModelViewSet):
     @list_route(methods=['get'])
     def filter_todo(self, request):
         title = request.query_params.get('todo', None)
-        print("hello world", title)
         title = get_specific_title(title=title)
         serializer = TodoSerializer(title, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -8,6 +8,7 @@ import {
   DropdownItem
 } from 'reactstrap';
 
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -23,16 +24,26 @@ class App extends Component {
       },
       todoList: [],
       dropdownOpen: false,
-      titles: []
+      titles: [],
     };
   }
   componentDidMount() {
     this.refreshList();
   }
+  setOrder = (data) => {
+    const _todoList = data;
+    for (let index = 0; index < _todoList.length; index++) {
+      _todoList[index]['name'] = index+1;
+    }
+    this.setState({todoList: _todoList})
+  }
   refreshList = () => {
     axios
       .get("http://localhost:8000/api/todos/")
-      .then(res => this.setState({ todoList: res.data, titles: res.data }))
+      .then(res => {
+          this.setOrder(res.data)
+          this.setState({titles: res.data})
+       })
       .catch(err => console.log(err));
   };
   displayCompleted = status => {
@@ -82,14 +93,13 @@ class App extends Component {
             onClick={() => this.editItem(item)}
             className="btn btn-secondary mr-2"
           >
-            {" "}
-            Edit{" "}
+            Edit
           </button>
           <button
             onClick={() => this.handleDelete(item)}
             className="btn btn-danger"
           >
-            Delete{" "}
+            Delete
           </button>
         </span>
       </li>
@@ -132,7 +142,7 @@ class App extends Component {
     } else {
       axios
         .get(`http://localhost:8000/api/todos/filter_todo/?todo=${item}`)
-        .then(res => this.setState({ todoList: res.data }))
+        .then(res => this.setOrder( res.data ))
         .catch(err => console.log(err));
     }
   };
