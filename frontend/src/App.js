@@ -87,8 +87,8 @@ class App extends Component {
             return;
           }
           let arr = Array.from(this.state.todoList);
-          const [remove] = arr.splice(source.index+1, 1);
-          arr.splice(destination.index+1, 0, remove);
+          const [remove] = arr.splice(source.index, 1);
+          arr.splice(destination.index, 0, remove);
           this.setState({
             todoList: arr
           });
