@@ -30,13 +30,10 @@ class App extends Component {
       todoList: [],
       dropdownOpen: false,
       titles: [],
-      changeOrder: false,
     };
   }
   componentDidMount() {
-    if(!this.state.changeOrder){
-      {this.refreshList();}
-    }
+    {this.refreshList();}
   }
   setOrder = (data) => {
     const _todoList = data;
@@ -89,12 +86,10 @@ class App extends Component {
           if (!destination) {
             return;
           }
-          console.log("hello", source, destination, draggableId)
           let arr = Array.from(this.state.todoList);
-          const [remove] = arr.splice(source.index, 1);
-          arr.splice(destination.index, 0, remove);
+          const [remove] = arr.splice(source.index+1, 1);
+          arr.splice(destination.index+1, 0, remove);
           this.setState({
-            changeOrder: true,
             todoList: arr
           });
         }}
